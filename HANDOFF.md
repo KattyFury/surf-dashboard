@@ -9,11 +9,11 @@ Chi tiết field thật + response mẫu: `phase1-api-survey-report.md`. Danh s�
 
 Chủ dự án vừa đổi hướng: thay vì (hoặc thêm vào) dashboard riêng, muốn thêm **3 box mới vào thẳng trang Valuation của `cv` (0xhieu.xyz)**, kích thước tương đồng box "Recent TGE multiples" hiện có (xem `D:\Files\Claude\build_for_me\cv\index.html`, class `.val-analysis.val-boxes`), nội dung lấy từ SURF API, mục tiêu: đủ hữu ích để mỗi tuần đăng được 2 bài X.
 
-## Trạng thái (2026-08-03, session 2) — ĐÃ BUILD XONG bản đầu
+## Trạng thái (2026-08-03, session 2) — ĐÃ BUILD, RỒI BỊ GỠ KHỎI `cv`
 
-Đã chốt qua `EnterPlanMode` + build thật, KHÔNG dùng research_airdrop_bot/VPS/Sheet nữa — xem quyết định bên dưới. 3 box đã sống trên `cv` (`http://0xhieu.xyz/valuation`, đã verify bằng headless screenshot).
+Đã chốt qua `EnterPlanMode` + build thật (không dùng research_airdrop_bot/VPS/Sheet — xem quyết định bên dưới), verify layout/data đúng bằng headless screenshot. Nhưng **chủ dự án xem xong thấy 3 box không mang lại giá trị, yêu cầu gỡ hẳn** — đã revert sạch khỏi `cv` (HTML/CSS/JS + file `surf-content.json`, xem `cv/HANDOFF.md` mục Failed Approaches, entry 2026-08-03). `cv` hiện **không còn dùng gì từ `surf-dashboard` nữa**.
 
-**`fetch-content.mjs`** (cùng thư mục) — script Node thuần, chạy `node fetch-content.mjs`, đọc key từ `.env.txt`, gọi 3 nhóm SURF endpoint (Token of the Week / VC watchlist 5 quỹ / Fundraising importance≥4), ghi ra `../../cv/surf-content.json`. Chạy **thủ công**, không cron. Chi tiết đầy đủ (endpoint, field, format hiển thị) ở `cv/HANDOFF.md` mục "Token of the Week / Recent VC Investments / Notable Fundraising".
+**`fetch-content.mjs`** (cùng thư mục) — script Node thuần vẫn còn ở đây, đọc key từ `.env.txt`, gọi 3 nhóm SURF endpoint (Token of the Week / VC watchlist 5 quỹ / Fundraising importance≥4), ghi ra `../../cv/surf-content.json`. **Không còn ai tiêu thụ output của nó** — chạy lại sẽ chỉ tạo ra 1 file JSON không được `cv` render nữa. Giữ lại làm tham khảo (biết cách gọi SURF API), không xoá, nhưng coi như tạm dừng cho tới khi có hướng nội dung khác thật sự hữu ích.
 
 ## Decisions Log
 
@@ -24,7 +24,7 @@ Chủ dự án vừa đổi hướng: thay vì (hoặc thêm vào) dashboard ri�
 
 ## Failed Approaches
 
-(chưa có)
+- 2026-08-03: Build 3 box (Token of the Week/Recent VC Investments/Notable Fundraising) gắn vào `cv` → chủ dự án thấy không hữu ích, gỡ hẳn ngay sau khi xem bản thật. Bài học: nội dung cụ thể (không phải chỉ "field thật, có data") vẫn cần review bằng ví dụ trước khi build full UI.
 
 ## Việc còn treo
 
