@@ -15,6 +15,20 @@ Chủ dự án vừa đổi hướng: thay vì (hoặc thêm vào) dashboard ri�
 
 **`fetch-content.mjs`** (cùng thư mục) — script Node thuần vẫn còn ở đây, đọc key từ `.env.txt`, gọi 3 nhóm SURF endpoint (Token of the Week / VC watchlist 5 quỹ / Fundraising importance≥4), ghi ra `../../cv/surf-content.json`. **Không còn ai tiêu thụ output của nó** — chạy lại sẽ chỉ tạo ra 1 file JSON không được `cv` render nữa. Giữ lại làm tham khảo (biết cách gọi SURF API), không xoá, nhưng coi như tạm dừng cho tới khi có hướng nội dung khác thật sự hữu ích.
 
+## Trạng thái (2026-08-05) — thêm `pre-tge-by-narrative.mjs`
+
+Chủ dự án hỏi: danh sách dự án **Pre-TGE xếp theo narrative + số vốn raise**. Đã build `pre-tge-by-narrative.mjs`, chạy thật, xuất `pre-tge-projects.md` + `.csv` ra Desktop (không dính gì tới `cv`).
+
+Cách lấy dữ liệu (khảo sát Giai đoạn 1 **không cover** — nó chỉ lọc 10/136 operation theo keyword `signal|fund|raise|heat|trend`):
+- `/search/airdrop` — có `total_raise` **dạng số USD** + `sort_by=total_raise` + `phase=active,claimable`. Đây là endpoint **duy nhất** cho ra 1 *danh sách* dự án chưa TGE kèm số raise. (`/market/tge` chỉ tra 1 project/lần; `/search/fundraising` không có số raise dạng field.)
+- `/project/detail?fields=overview,funding,tge_status` — `overview.tags` = narrative, `overview.tge_status` = `pre`/`upcoming`/`post`, `funding.rounds[]` = round/valuation/investor.
+
+Kết quả lần chạy 2026-08-05: pool 486 ứng viên → 430 đã TGE (`post`) → **56 dự án Pre-TGE / 35 narrative / tổng $4.37B**.
+
+**Giới hạn cần biết**: pool chỉ gồm dự án **có chiến dịch airdrop được SURF track**. Dự án Pre-TGE gọi vốn nhưng không làm airdrop sẽ **không** xuất hiện — API không có endpoint "list mọi dự án pre-TGE".
+
+**Rate limit**: `/project/detail` trả 429 rất nhanh nếu bắn song song (lần đầu 178/275 request fail). Đã chỉnh: 2 luồng + gap 250ms + retry backoff + cache `.detail-cache.json` (đã gitignore) → chạy lại 486 request, 0 lỗi. API **không** trả header rate-limit nào để dò.
+
 ## Decisions Log
 
 - 2026-08-03: Giai đoạn 1 report được xác nhận đúng, không cần khảo sát lại.
