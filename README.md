@@ -23,6 +23,16 @@ surf sync                     # đồng bộ spec API mới nhất — chạy l�
 
 Docs đầy đủ: https://agents.asksurf.ai/docs
 
+## Credit & giới hạn — đọc trước khi bắn API
+
+SURF **không còn free thoải mái như trước** — hiện tại mỗi IP chỉ được **30 credit miễn phí/ngày**, reset lúc 00:00 UTC, không cần đăng ký để thử (nguồn: [docs.asksurf.ai/docs/pricing](https://docs.asksurf.ai/docs/pricing)). Muốn dùng nhiều hơn phải top-up (tối thiểu $20, ~$0.006/credit).
+
+Chi phí mỗi loại call:
+- **Data API** (hầu hết endpoint bạn sẽ dùng): Light = 1 credit, Standard = 2 credit, Heavy = 4 credit. Gọi lặp lại cùng endpoint/tham số trong vòng 3 phút thì **miễn phí** (cache).
+- **Chat API** (`surf-2.0`, nếu bạn dùng AI summary có sẵn của SURF): 20–200 credit/lần tùy `reasoning.effort`.
+
+**Ý nghĩa thực tế khi build**: 30 credit/ngày đủ cho vài chục lệnh `--help`/thử nghiệm hoặc 1 dashboard nhẹ (kiểu `fetch-content.mjs`, ~10-15 call). Nhưng script nào phải quét **hàng trăm** dự án qua `/project/detail` như `pre-tge-by-narrative.mjs` (486–700 call) thì **chắc chắn vượt free tier** — phải có key đã top-up, và vẫn nên giữ cache + concurrency thấp như đã làm (xem Bước 4) để không đốt credit vô ích khi chạy thử đi thử lại.
+
 ## Bước 2 — Tự khảo sát, đừng đọc docs suông
 
 136 operations là quá nhiều để đọc hết. Cách hiệu quả hơn: lọc theo từ khóa liên quan tới thứ bạn quan tâm, rồi chạy thử thật từng lệnh để xem **response thật** — không phải chỉ đọc schema, vì có field trong schema nhưng thực tế API không bao giờ trả (mình gặp vài trường hợp như vậy, xem `phase1-api-survey-report.md`).
@@ -39,7 +49,34 @@ Vài từ khóa gợi ý để bắt đầu lọc theo hướng bạn quan tâm:
 
 **Ghi lại field thật khi khảo sát** — tên field, kiểu dữ liệu, field nào null/thiếu trong response mẫu. Việc này giúp bạn (hoặc AI hỗ trợ bạn code) không bịa ra field không tồn tại khi build. Ví dụ đầy đủ cách mình làm: [`phase1-api-survey-report.md`](phase1-api-survey-report.md).
 
-## Bước 3 — Build phần của riêng bạn
+## Bước 3 — Chọn hướng: content dễ ra hàng ngày, hay đào sâu tìm insight
+
+136 endpoint chia đại khái thành 2 nhóm, độ khó khác hẳn nhau. Chọn 1 trong 2 (hoặc cả 2) tùy bạn muốn đầu tư bao nhiêu công sức mỗi tuần.
+
+### Nhóm dễ — Signal / Heat Score (ra bài gần như không cần suy luận)
+
+API đã **tính sẵn điểm và lý do** cho bạn, việc của bạn chỉ là chọn ngưỡng và trình bày đẹp:
+
+- `heatscore/token-of-the-day`, `heatscore/token-of-week` — top 10 token nóng nhất ngày/tuần, có sẵn `heat_score`, `price_change_percent`.
+- `heatscore/projects` — bảng xếp hạng đầy đủ, lọc `time_range=24h/7d`, sort theo `score`/`rank`.
+- Field ăn tiền nhất: `core_state.reason` — 1 câu giải thích **vì sao** nó nóng (ví dụ `"P↓↓↓ / LiqL↑↑↑ / ΔOI↓↓↓ / PV↑↑↑"` = long liquidation cascade). Đây gần như là caption có sẵn cho bài đăng.
+
+Công thức 1 bài/tuần: gọi `token-of-week`, lấy top 5, mỗi token 1 dòng gồm symbol + `heat_score` + `core_state.reason` dịch sang lời thường. Không cần join thêm nguồn nào khác.
+
+### Nhóm khó hơn — Fund / VC / Fundraising / Valuation (phải tự ghép mới ra insight)
+
+Đây là hướng mình (chủ repo) chọn, vì field ở nhóm này **rời rạc, không có sẵn "điểm số"** như Signal — API chỉ đưa dữ liệu thô (ai đầu tư gì, bao nhiêu tiền, lúc nào), còn "cái gì đáng nói" thì bạn phải tự đặt câu hỏi rồi lắp field lại. Bù lại nếu ra được thì insight độc hơn hẳn, ít người trùng content.
+
+Vài "công thức" cụ thể để bắt đầu (đều dùng field thật, xem chi tiết trong `phase1-api-survey-report.md`):
+
+1. **Narrative nào đang hút vốn nhất tuần này** — gọi `/search/airdrop?phase=active,claimable&sort_by=total_raise` lấy danh sách ứng viên, rồi `/project/detail?fields=overview,funding` từng dự án lấy `overview.tags` (narrative) + `funding.rounds[].valuation`. Gom theo tag, cộng `total_raise` mỗi nhóm. → chính là cách `pre-tge-by-narrative.mjs` làm, copy logic `buildMarkdown`/nhóm `groups` mà dùng.
+2. **Quỹ nào đang gom nhiều nhất** — `/fund/ranking?metric=portfolio_count` cho biết quỹ active nhất theo tổng số dự án, nhưng muốn biết *tuần này* quỹ nào mới xuống tiền thì phải gọi `/fund/portfolio?id=<fund_id>&sort_by=invested_at&order=desc&invested_after=<7 ngày trước, unix>` cho từng quỹ trong watchlist của bạn (xem `resolveFundId` + `fetchVcRecent` trong `fetch-content.mjs`).
+3. **Lead investor nào hay dẫn dắt deal lớn** — trong response `/fund/portfolio`, lọc `is_lead === true`, sort theo `recent_raise` giảm dần — quỹ nào lead nhiều deal to là tín hiệu họ đang tin vào 1 sector.
+4. **Định giá vòng gọi vốn có xứng với traction hiện tại không** (khó nhất, phải join 2 domain khác nhau) — lấy `funding.rounds[].valuation` từ `/project/detail` của 1 dự án, rồi tra `heat_score`/`volume_24h` cùng `project_id` đó qua `heatscore/detail?id=<project_id>`. Valuation cao nhưng heat score/volume thấp = thị trường đang định giá thấp hơn kỳ vọng gọi vốn, hoặc ngược lại — đây là kiểu nhận xét không API nào tự đưa ra sẵn, bạn phải tự so 2 con số.
+
+Lưu ý field bị thiếu khi dùng nhóm này: `search/fundraising` (feed tin tức gọi vốn) **không có** số tiền dạng field số — chỉ có trong text `title`/`summary`, muốn số sạch để tính toán phải lấy qua `/fund/portfolio` hoặc `/search/airdrop` như trên.
+
+## Bước 4 — Build phần của riêng bạn
 
 Không có công thức chung ở bước này — tuỳ bạn muốn kể câu chuyện gì mỗi tuần. Hai ví dụ thật mình đã chạy, để tham khảo cách gọi API + xử lý dữ liệu, **không phải để bạn copy y nguyên**:
 
