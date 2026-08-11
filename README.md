@@ -14,7 +14,7 @@ SURF là 1 nền tảng aggregator dữ liệu crypto (signal/heat score, VC & f
 curl -fsSL https://downloads.asksurf.ai/cli/releases/install.sh | sh
 ```
 
-CLI `surf` mã nguồn mở tại [github.com/asksurf-ai/surf-cli](https://github.com/asksurf-ai/surf-cli) (viết bằng Go). Xin API key từ SURF (qua Discord/docs của họ), rồi set:
+CLI `surf` mã nguồn mở tại [github.com/asksurf-ai/surf-cli](https://github.com/asksurf-ai/surf-cli) (viết bằng Go). Lấy API key tại dashboard [agents.asksurf.ai](https://agents.asksurf.ai) — đăng nhập, tạo key, **không cần thẻ tín dụng** để dùng free tier (30 credit/ngày, xem mục dưới). Rồi set:
 
 ```bash
 export SURF_API_KEY=xxxxx     # hoặc set biến môi trường tương ứng trên Windows
