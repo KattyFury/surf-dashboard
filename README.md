@@ -90,21 +90,19 @@ Không có công thức chung ở bước này — tuỳ bạn muốn kể câu 
 
 Cả 2 đều là Node script thuần (`node <file>.mjs`), đọc API key từ file `.env.txt` (không commit — xem `.gitignore`), không có backend/cron gì phức tạp. Chạy thủ công khi nào muốn cập nhật số liệu để đăng bài.
 
-Vài điều đáng lưu ý rút ra khi build (chi tiết ở [`HANDOFF.md`](HANDOFF.md)):
+Vài điều đáng lưu ý rút ra khi build:
 
 - **Rate limit gắt** nếu bắn request song song — nên giới hạn concurrency thấp (2 luồng) + gap giữa các request + cache lại response theo id để chạy lại không tốn quota.
 - Không phải endpoint nào cũng có field bạn kỳ vọng — ví dụ `search/fundraising` không có field số tiền raise dạng số (chỉ có trong text `title`/`summary`), muốn số sạch phải lấy qua `/fund/portfolio` hoặc `/search/airdrop`.
-- Build xong 1 bản demo cụ thể rồi tự đánh giá xem có thật sự hữu ích trước khi đầu tư làm UI hoàn chỉnh — mình từng build rồi gỡ bỏ vì thấy nội dung chưa đủ giá trị (xem "Failed Approaches" trong HANDOFF.md).
+- Build xong 1 bản demo cụ thể rồi tự đánh giá xem có thật sự hữu ích trước khi đầu tư làm UI hoàn chỉnh — đừng để công sức code đi trước giá trị content.
 
 ## Cấu trúc repo
 
 | File | Nội dung |
 |---|---|
 | `phase1-api-survey-report.md` | Báo cáo khảo sát field thật của 9 endpoint domain Signal/Fund/Fundraising |
-| `surf-dashboard-spec.md` | Spec gốc (tham khảo cách lên kế hoạch 1 đợt khảo sát API có mục tiêu rõ) |
 | `fetch-content.mjs` | Script ví dụ: Token of Week + VC watchlist + fundraising headlines |
 | `pre-tge-by-narrative.mjs` | Script ví dụ: dự án Pre-TGE xếp theo narrative + vốn raise |
-| `HANDOFF.md` | Nhật ký quá trình build thật — quyết định, giới hạn, hướng đã thử và bỏ |
 
 ## Setup để chạy script
 
