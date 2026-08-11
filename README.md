@@ -33,6 +33,11 @@ Chi phí mỗi loại call:
 
 **Ý nghĩa thực tế khi build**: 30 credit/ngày đủ cho vài chục lệnh `--help`/thử nghiệm hoặc 1 dashboard nhẹ (kiểu `fetch-content.mjs`, ~10-15 call). Nhưng script nào phải quét **hàng trăm** dự án qua `/project/detail` như `pre-tge-by-narrative.mjs` (486–700 call) thì **chắc chắn vượt free tier** — phải có key đã top-up, và vẫn nên giữ cache + concurrency thấp như đã làm (xem Bước 4) để không đốt credit vô ích khi chạy thử đi thử lại.
 
+> ⚠️ **Cảnh báo thật, đã tốn tiền thật**: chạy `pre-tge-by-narrative.mjs` **1 lần từ đầu** (không có cache) gọi tới **~486–700 lần `/project/detail`** + vài lần `/search/airdrop` phân trang — bản thân mình từng tốn **~600 credit trong 1 lần chạy**. Đây không phải lỗi/bug, đó là chi phí thật của việc quét gần 500-700 dự án. Trước khi chạy script này:
+> - **Đừng chạy trên free tier (30 credit/ngày)** — sẽ hết ngay sau vài chục request đầu, phần còn lại lỗi 429/hết quota.
+> - **Đừng xoá `.detail-cache.json`** — script cache theo `project_id`, xoá cache = chạy lại từ đầu = tốn credit lần nữa cho những dự án đã fetch rồi.
+> - Muốn test nhẹ trước khi chạy full, giảm tạm `CANDIDATE_POOL` trong file (dòng khai báo hằng số) xuống vài chục thay vì 700, xem thử output ra sao rồi mới chạy full.
+
 ## Bước 2 — Tự khảo sát, đừng đọc docs suông
 
 136 operations là quá nhiều để đọc hết. Cách hiệu quả hơn: lọc theo từ khóa liên quan tới thứ bạn quan tâm, rồi chạy thử thật từng lệnh để xem **response thật** — không phải chỉ đọc schema, vì có field trong schema nhưng thực tế API không bao giờ trả (mình gặp vài trường hợp như vậy, xem `phase1-api-survey-report.md`).

@@ -3,6 +3,10 @@
 // rồi `/project/detail` từng dự án để lấy `tags` (narrative) + `tge_status` (pre/upcoming/post)
 // + `funding.rounds` (round gần nhất, valuation, lead investor).
 // Chạy: node pre-tge-by-narrative.mjs   → ghi ra Desktop (md + csv).
+//
+// ⚠️ TỐN CREDIT THẬT: 1 lần chạy từ đầu (không cache) gọi ~486–700 lần /project/detail
+// — đã tốn thật ~600 credit/lần chạy. ĐỪNG chạy trên free tier (30 credit/ngày), và
+// ĐỪNG xoá .detail-cache.json (xoá = fetch lại từ đầu = tốn credit lần nữa).
 
 import { readFileSync, writeFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
