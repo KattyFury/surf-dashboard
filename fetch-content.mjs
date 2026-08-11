@@ -1,6 +1,6 @@
-// Fetch content that động cho 3 box mới của cv (Token of the Week / Recent VC Investments /
-// Notable Fundraising) từ SURF API, ghi ra cv/surf-content.json. Chạy thủ công: `node fetch-content.mjs`
-// (không cron/VPS — refresh khi nào cần, ~2 lần/tuần).
+// Ví dụ: fetch Token of the Week / VC watchlist / Fundraising headlines từ SURF API,
+// ghi ra surf-content.json cùng thư mục. Chạy thủ công: `node fetch-content.mjs`
+// (không cron/VPS — refresh khi nào cần, ví dụ vài lần/tuần).
 
 import { readFileSync, writeFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
@@ -9,7 +9,7 @@ import { dirname, join } from 'node:path';
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const TOKEN = readFileSync(join(__dirname, '.env.txt'), 'utf8').trim();
 const BASE = 'https://api.asksurf.ai/gateway/v1';
-const OUT_PATH = join(__dirname, '..', '..', 'cv', 'surf-content.json');
+const OUT_PATH = join(__dirname, 'surf-content.json');
 
 const FUND_WATCHLIST = ['a16z', 'Coinbase Ventures', 'Paradigm', 'Multicoin Capital', 'Framework Ventures'];
 
